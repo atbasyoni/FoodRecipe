@@ -2,6 +2,7 @@
 using FoodRecipe.Common.DTOs;
 using FoodRecipe.Common.Helpers;
 using FoodRecipe.Data.Models;
+using MassTransit;
 using MediatR;
 
 namespace FoodRecipe.Features.Orders.PlaceOrder.Commands
@@ -15,10 +16,12 @@ namespace FoodRecipe.Features.Orders.PlaceOrder.Commands
 
         public override async Task<ResultDTO> Handle(PlaceOrderCommand request, CancellationToken cancellationToken)
         {
-            var recipe = request.MapOne<Order>();
-            await _repository.AddAsync(recipe);
+            var order = request.MapOne<Order>();
 
-            return ResultDTO.Success(recipe);
+            order = await _repository.AddAsync(order);
+            await _repository.SaveChangesAsync();
+
+            return ResultDTO.Success(order);
         }
     }
 }

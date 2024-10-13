@@ -17,6 +17,7 @@ using Serilog;
 using Serilog.Sinks.MSSqlServer;
 using Autofac.Extensions.DependencyInjection;
 using System.Reflection;
+using MassTransit;
 
 namespace FoodRecipe
 {
@@ -63,7 +64,6 @@ namespace FoodRecipe
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             }
-
                         },
                         new string[] {}
                     }
@@ -110,6 +110,18 @@ namespace FoodRecipe
                 builder.RegisterModule(new AutofacModule()));
 
             builder.Services.AddAuthorization();
+
+            builder.Services.AddMassTransit(x =>
+            {
+                x.UsingRabbitMq((context, cfg) =>
+                {
+                    cfg.Host("rabbitmq://localhost", h =>
+                    {
+                        h.Username("guest");
+                        h.Password("guest");
+                    });
+                });
+            });
 
             var app = builder.Build();
             
